@@ -1,0 +1,32 @@
+{
+    "name": "mcp-google-docs",
+    "version": "1.0.0",
+    "description": "Model Context Protocol (MCP) server for Google Docs integration",
+    "main": "build/server.js",
+    "type": "module",
+    "scripts": {
+      "build": "tsc",
+      "start": "node build/server.js",
+      "dev": "tsc -w",
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+      "mcp",
+      "google-docs",
+      "claude",
+      "ai",
+      "model-context-protocol"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+      "@google-cloud/local-auth": "^2.1.0",
+      "@modelcontextprotocol/sdk": "^1.4.1",
+      "googleapis": "^126.0.1",
+      "zod": "^3.22.4"
+    },
+    "devDependencies": {
+      "@types/node": "^20.11.5",
+      "typescript": "^5.3.3"
+    }
+  }
