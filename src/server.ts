@@ -16,11 +16,14 @@ const SCOPES = [
   "https://www.googleapis.com/auth/drive.readonly" // Add read-only scope as a fallback
 ];
 
+// Resolve paths relative to the project root
+const PROJECT_ROOT = path.resolve(path.join(path.dirname(new URL(import.meta.url).pathname), '..'));
+
 // The token path is where we'll store the OAuth credentials
-const TOKEN_PATH = "/Users/gboyega/Documents/MCP/mcp-google-docs/token.json";
+const TOKEN_PATH = path.join(PROJECT_ROOT, "token.json");
 
 // The credentials path is where your OAuth client credentials are stored
-const CREDENTIALS_PATH = "/Users/gboyega/Documents/MCP/mcp-google-docs/credentials.json";
+const CREDENTIALS_PATH = path.join(PROJECT_ROOT, "credentials.json");
 
 // Create an MCP server instance
 const server = new McpServer({
