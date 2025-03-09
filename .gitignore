@@ -7,6 +7,7 @@ build/
 # Credentials and tokens
 credentials.json
 token.json
+claude_desktop_config.json
 
 # Environment variables
 .env
