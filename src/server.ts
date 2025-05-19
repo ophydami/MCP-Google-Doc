@@ -124,6 +124,9 @@ server.resource(
         q: "mimeType='application/vnd.google-apps.document'",
         fields: "files(id, name, createdTime, modifiedTime)",
         pageSize: 50,
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+        corpora: 'allDrives',
       });
 
       const files = response.data.files || [];
@@ -404,6 +407,9 @@ server.tool(
         q: `mimeType='application/vnd.google-apps.document' and fullText contains '${query}'`,
         fields: "files(id, name, createdTime, modifiedTime)",
         pageSize: 10,
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+        corpora: 'allDrives',
       });
       
       // Add response logging for debugging
