@@ -504,6 +504,115 @@ server.tool(
   }
 );
 
+// Tool to list all documents
+server.tool(
+  "list-docs",
+  {},
+  async () => {
+    try {
+      const response = await driveClient.files.list({
+        q: "mimeType='application/vnd.google-apps.document'",
+        fields: "files(id, name, createdTime, modifiedTime)",
+        pageSize: 50,
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+        corpora: 'allDrives',
+      });
+
+      const files = response.data.files || [];
+      let content = "Google Docs in your Drive:\n\n";
+      
+      if (files.length === 0) {
+        content += "No Google Docs found.";
+      } else {
+        files.forEach((file: any) => {
+          content += `Title: ${file.name}\n`;
+          content += `ID: ${file.id}\n`;
+          content += `Created: ${file.createdTime}\n`;
+          content += `Last Modified: ${file.modifiedTime}\n\n`;
+        });
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: content,
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error listing documents:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error listing documents: ${error}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Tool to get a specific document by ID
+server.tool(
+  "get-doc",
+  {
+    docId: z.string().describe("The ID of the document to retrieve"),
+  },
+  async ({ docId }) => {
+    try {
+      const doc = await docsClient.documents.get({
+        documentId: docId,
+      });
+      
+      // Extract the document content
+      let content = `Document: ${doc.data.title}\n\n`;
+      
+      // Process the document content from the complex data structure
+      const document = doc.data;
+      if (document && document.body && document.body.content) {
+        let textContent = "";
+        
+        // Loop through the document's structural elements
+        document.body.content.forEach((element: any) => {
+          if (element.paragraph) {
+            element.paragraph.elements.forEach((paragraphElement: any) => {
+              if (paragraphElement.textRun && paragraphElement.textRun.content) {
+                textContent += paragraphElement.textRun.content;
+              }
+            });
+          }
+        });
+        
+        content += textContent;
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: content,
+          },
+        ],
+      };
+    } catch (error) {
+      console.error(`Error getting document ${docId}:`, error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error getting document ${docId}: ${error}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
 // PROMPTS
 
 // Prompt for document creation
