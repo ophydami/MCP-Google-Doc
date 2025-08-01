@@ -31,6 +31,7 @@ npm install
 ```
 
 3. Create an OAuth 2.0 client ID in the Google Cloud Console:
+
    - Go to the [Google Cloud Console](https://console.cloud.google.com/)
    - Create a new project or select an existing one
    - Enable the Google Docs API and Google Drive API
@@ -66,6 +67,7 @@ The first time you run the server, it will prompt you to authenticate with Googl
 To use this server with Claude for Desktop:
 
 1. Edit your Claude Desktop configuration file:
+
    - On macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
    - On Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
@@ -83,6 +85,12 @@ To use this server with Claude for Desktop:
 ```
 
 Replace `/absolute/path/to/build/server.js` with the actual path to your built server.js file.
+
+## Connecting to Claude Code
+
+```bash
+claude mcp add --transport stdio google-docs node /absolute/path/to/build/server.js
+```
 
 3. Restart Claude for Desktop.
 
@@ -143,10 +151,12 @@ Here are some example prompts you can use with Claude once the server is connect
 ## Troubleshooting
 
 If you encounter authentication issues:
+
 1. Delete the `token.json` file in your project directory
 2. Run the server again to trigger a new authentication flow
 
 If you're having trouble with the Google Docs API:
+
 1. Make sure the API is enabled in your Google Cloud Console
 2. Check that your OAuth credentials have the correct scopes
 
