@@ -5,6 +5,7 @@ import { authenticate } from "@google-cloud/local-auth";
 import * as fs from "fs";
 import * as path from "path";
 import * as process from "process";
+import { fileURLToPath } from "url";
 import { z } from "zod";
 import { docs_v1, drive_v3 } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
@@ -17,7 +18,7 @@ const SCOPES = [
 ];
 
 // Resolve paths relative to the project root
-const PROJECT_ROOT = path.resolve(path.join(path.dirname(new URL(import.meta.url).pathname), '..'));
+const PROJECT_ROOT = path.resolve(path.join(path.dirname(fileURLToPath(import.meta.url)), '..'));
 
 // The token path is where we'll store the OAuth credentials
 const TOKEN_PATH = path.join(PROJECT_ROOT, "token.json");
@@ -154,7 +155,7 @@ server.resource(
     try {
       const response = await driveClient.files.list({
         q: "mimeType='application/vnd.google-apps.document'",
-        fields: "files(id, name, createdTime, modifiedTime)",
+        fields: "files(id, name, createdTime, modifiedTime, owners)",
         pageSize: 50,
         supportsAllDrives: true,
         includeItemsFromAllDrives: true,
@@ -163,13 +164,14 @@ server.resource(
 
       const files = response.data.files || [];
       let content = "Google Docs in your Drive:\n\n";
-      
+
       if (files.length === 0) {
         content += "No Google Docs found.";
       } else {
         files.forEach((file: any) => {
           content += `Title: ${file.name}\n`;
           content += `ID: ${file.id}\n`;
+          content += `Owner: ${file.owners?.map((o: any) => `${o.displayName} <${o.emailAddress}>`).join(', ') || 'Unknown'}\n`;
           content += `Created: ${file.createdTime}\n`;
           content += `Last Modified: ${file.modifiedTime}\n\n`;
         });
@@ -544,7 +546,7 @@ server.tool(
     try {
       const response = await driveClient.files.list({
         q: "mimeType='application/vnd.google-apps.document'",
-        fields: "files(id, name, createdTime, modifiedTime)",
+        fields: "files(id, name, createdTime, modifiedTime, owners)",
         pageSize: 50,
         supportsAllDrives: true,
         includeItemsFromAllDrives: true,
@@ -553,13 +555,14 @@ server.tool(
 
       const files = response.data.files || [];
       let content = "Google Docs in your Drive:\n\n";
-      
+
       if (files.length === 0) {
         content += "No Google Docs found.";
       } else {
         files.forEach((file: any) => {
           content += `Title: ${file.name}\n`;
           content += `ID: ${file.id}\n`;
+          content += `Owner: ${file.owners?.map((o: any) => `${o.displayName} <${o.emailAddress}>`).join(', ') || 'Unknown'}\n`;
           content += `Created: ${file.createdTime}\n`;
           content += `Last Modified: ${file.modifiedTime}\n\n`;
         });
