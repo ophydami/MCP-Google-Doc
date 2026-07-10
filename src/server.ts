@@ -52,14 +52,45 @@ async function authorize() {
     
     // Check if we have previously stored a token
     if (fs.existsSync(TOKEN_PATH)) {
-      console.error("Found existing token, attempting to use it...");
+      console.error("Found existing token, validating it...");
       const token = JSON.parse(fs.readFileSync(TOKEN_PATH, "utf-8"));
       oAuth2Client.setCredentials(token);
-      return oAuth2Client;
+
+      // Persist any tokens the library refreshes during the session, so a fresh
+      // access token (or rotated refresh token) survives a restart.
+      oAuth2Client.on("tokens", (newTokens) => {
+        try {
+          const merged = { ...token, ...newTokens };
+          fs.writeFileSync(TOKEN_PATH, JSON.stringify(merged));
+          console.error("Refreshed token persisted to:", TOKEN_PATH);
+        } catch (e) {
+          console.error("Could not persist refreshed token:", e);
+        }
+      });
+
+      // Actively verify the token works — this forces a refresh when the access
+      // token is stale. A dead/revoked refresh token throws `invalid_grant`
+      // here; in that case we delete the stale token and fall through to a fresh
+      // OAuth flow instead of silently loading a token that fails on every API
+      // call (the previous behaviour — the "silent death").
+      try {
+        await oAuth2Client.getAccessToken();
+        console.error("Stored token valid.");
+        return oAuth2Client;
+      } catch (err: any) {
+        const reason = err?.response?.data?.error || err?.message || String(err);
+        console.error(`Stored token invalid (${reason}) — deleting and re-authenticating...`);
+        try {
+          fs.unlinkSync(TOKEN_PATH);
+        } catch {
+          /* ignore — already gone */
+        }
+        // fall through to the OAuth flow below
+      }
     }
-    
-    // No token found, use the local-auth library to get one
-    console.error("No token found, starting OAuth flow...");
+
+    // No valid token, use the local-auth library to get one
+    console.error("Starting OAuth flow...");
     const client = await authenticate({
       scopes: SCOPES,
       keyfilePath: CREDENTIALS_PATH,
